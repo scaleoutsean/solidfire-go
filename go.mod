@@ -1,6 +1,6 @@
 module github.com/scaleoutsean/solidfire-go
 
-go 1.13
+go 1.25
 
 require (
 	github.com/kubernetes-csi/csi-lib-iscsi v0.0.0-20200118015005-959f12c91ca8
