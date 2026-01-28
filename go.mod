@@ -1,4 +1,4 @@
-module github.com/j-griffith/solidfire-go
+module github.com/scaleoutsean/solidfire-go
 
 go 1.13
 

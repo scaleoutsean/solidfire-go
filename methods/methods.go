@@ -3,7 +3,7 @@ package cloudops
 import (
 	"context"
 	"fmt"
-	"github.com/j-griffith/solidfire-go/sdk"
+	"github.com/scaleoutsean/solidfire-go/sdk"
 	"github.com/kubernetes-csi/csi-lib-iscsi/iscsi"
 	"gopkg.in/yaml.v2"
 	"log"
@@ -67,27 +67,10 @@ func NewClient(c string) (*Client, error) {
 		log.Printf("failure verifying endpoint config while conducting initial client connection: %v\n", err)
 		os.Exit(1)
 	}
-	// Verify specified user tenant/account and ge it's ID, if it doesn't exist
-	// create it
-	req := sdk.GetAccountByNameRequest{}
-	req.Username = client.TenantName
-	result, sdkErr := client.SFClient.GetAccountByName(ctx, &req)
-	if sdkErr != nil {
-		if sdkErr.Detail == "500:xUnknownAccount" {
-			req := sdk.AddAccountRequest{}
-			req.Username = client.TenantName
-			result, sdkErr := client.SFClient.AddAccount(ctx, &req)
-			if sdkErr != nil {
-				log.Printf("failed to create default account: %+v\n", sdkErr)
-				os.Exit(1)
-			}
-			client.AccountID = result.Account.AccountID
-
-		}
+	if err := client.initAccount(ctx); err != nil {
+		log.Printf("failed to initialize account: %v\n", err)
+		os.Exit(1)
 	}
-	client.AccountID = result.Account.AccountID
-	client.InitiatorSecret = result.Account.InitiatorSecret
-	client.TargetSecret = result.Account.TargetSecret
 
 	if client.InitiatorIface == "" {
 		client.InitiatorIface = "default"
@@ -96,7 +79,84 @@ func NewClient(c string) (*Client, error) {
 	return &client, nil
 }
 
-func (c *Client) GetCreateVolume(req sdk.CreateVolumeRequest) (*sdk.Volume, error) {
+func NewClientWithArgs(endpoint, version, tenantName string, defaultVolSize string) (*Client, error) {
+	client := &Client{
+		Endpoint:          endpoint,
+		Version:           version,
+		TenantName:        tenantName,
+		DefaultVolumeSize: defaultVolSize,
+	}
+
+	if err := parseEndpointString(client.Endpoint, client); err != nil {
+		log.Printf("failure parsing endpoint string: %v\n", err)
+		return nil, err
+	}
+
+	var sf sdk.SFClient
+	ctx := context.Background()
+	sf.Connect(ctx, client.URL, client.Version, client.Login, client.Password)
+	client.SFClient = &sf
+
+	if err := client.initAccount(ctx); err != nil {
+		return nil, err
+	}
+	if client.InitiatorIface == "" {
+		client.InitiatorIface = "default"
+	}
+	return client, nil
+}
+
+func NewClientFromSecrets(url, user, password, version, tenantName, defaultVolSize string) (*Client, error) {
+	client := &Client{
+		URL:               url,
+		Login:             user,
+		Password:          password,
+		Version:           version,
+		TenantName:        tenantName,
+		DefaultVolumeSize: defaultVolSize,
+	}
+
+	var sf sdk.SFClient
+	ctx := context.Background()
+	sf.Connect(ctx, client.URL, client.Version, client.Login, client.Password)
+	client.SFClient = &sf
+
+	if err := client.initAccount(ctx); err != nil {
+		return nil, err
+	}
+	if client.InitiatorIface == "" {
+		client.InitiatorIface = "default"
+	}
+	return client, nil
+}
+
+func (c *Client) initAccount(ctx context.Context) error {
+	// Verify specified user tenant/account and get it's ID, if it doesn't exist
+	// create it
+	req := sdk.GetAccountByNameRequest{}
+	req.Username = c.TenantName
+	result, sdkErr := c.SFClient.GetAccountByName(ctx, &req)
+	if sdkErr != nil {
+		if sdkErr.Detail == "500:xUnknownAccount" {
+			req := sdk.AddAccountRequest{}
+			req.Username = c.TenantName
+			result, sdkErr := c.SFClient.AddAccount(ctx, &req)
+			if sdkErr != nil {
+				return fmt.Errorf("failed to create default account: %+v", sdkErr)
+			}
+			c.AccountID = result.Account.AccountID
+		} else {
+			return fmt.Errorf("error getting account: %+v", sdkErr)
+		}
+	} else {
+		c.AccountID = result.Account.AccountID
+	}
+	c.InitiatorSecret = result.Account.InitiatorSecret
+	c.TargetSecret = result.Account.TargetSecret
+
+	return nil
+}
+
 	ctx := context.Background()
 	v, sdkErr := c.GetVolumeByName(req.Name)
 	if sdkErr != nil {

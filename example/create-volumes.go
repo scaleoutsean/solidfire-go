@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/j-griffith/solidfire-go/sdk"
-	"github.com/kubernetes-csi/csi-lib-iscsi/iscsi"
-	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/kubernetes-csi/csi-lib-iscsi/iscsi"
+	"github.com/scaleoutsean/solidfire-go/sdk"
+	"gopkg.in/yaml.v2"
 )
 
 const GiB = 1073741824
