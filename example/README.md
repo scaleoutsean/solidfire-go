@@ -33,4 +33,6 @@
 
 This is Go implementation of my old PowerShell "parallel backup to S3" [script](https://github.com/scaleoutsean/awesome-solidfire/blob/master/scripts/parallel-backup-to-s3-v2.ps1) uses a private API call to get the slices.json report to map volumes to nodes for better scheduling and optimal parallelization.
 
+Note that `main()` is a stub. The rest of this example is an exercise for the user.
+
 As the maximum number of bulk job slots is limited, it is recommended to leave some available for restores or other ad-hoc actions without having to interrupt or stop backup to S3.
