@@ -25,8 +25,8 @@ gopkg.in/yaml.v2
 Build examples:
 
 ```sh
-go build -o create-volumes ./example/create-volumes.go
-go build -o s3-backup ./example/s3-backup.go
+go build -o create-volumes ./example/create-volumes/main.go
+go build -o s3-backup ./example/s3-backup/main.go
 # or build everything at once
 # go build ./sdk/... ./methods/... && go build -o create-volumes example/create-volumes.go && go build -o s3-backup example/s3-backup.go
 ```

@@ -51,21 +51,21 @@ func NewClient(c string) (*Client, error) {
 		log.Printf("failure parsing supplied config yaml: %v\n", err)
 		return &client, err
 	}
-	if parseEndpointString(client.Endpoint, &client) != nil {
+	if err := parseEndpointString(client.Endpoint, &client); err != nil {
 		log.Printf("failure parsing endpoint string: %v\n", err)
 		os.Exit(1)
 	}
 
 	var sf sdk.SFClient
 	ctx := context.Background()
-	sf.Connect(ctx, client.URL, client.Version, client.Login, client.Password)
+	sdkErr := sf.Connect(ctx, client.URL, client.Version, client.Login, client.Password)
 
 	// We want to persist the connection info we created above, otherwise ever call is prefaced with
 	// this connect routine (blek)
 	client.SFClient = &sf
 
-	if err != nil {
-		log.Printf("failure verifying endpoint config while conducting initial client connection: %v\n", err)
+	if sdkErr != nil {
+		log.Printf("failure verifying endpoint config while conducting initial client connection: %v\n", sdkErr)
 		os.Exit(1)
 	}
 	if err := client.initAccount(ctx); err != nil {
@@ -178,18 +178,19 @@ func (c *Client) initAccount(ctx context.Context) error {
 
 func (c *Client) GetCreateVolume(req sdk.CreateVolumeRequest) (*sdk.Volume, error) {
 	ctx := context.Background()
-	v, sdkErr := c.GetVolumeByName(req.Name)
-	if sdkErr != nil {
+	v, err := c.GetVolumeByName(req.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	if v != nil {
 		return v, nil
 	}
 
-	vol, sdkErr := c.SFClient.CreateVolume(ctx, &req)
-	if sdkErr != nil {
-		log.Printf("failed to create volume: %+v\n", sdkErr)
-		return &sdk.Volume{}, sdkErr
+	vol, err := c.SFClient.CreateVolume(ctx, &req)
+	if err != nil {
+		log.Printf("failed to create volume: %+v\n", err)
+		return &sdk.Volume{}, err
 	}
 	return &vol.Volume, nil
 }

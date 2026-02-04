@@ -33,7 +33,7 @@ func WaitForPathToExist(fileName string, numTries int) bool {
 			log.Printf("path found: %v\n", fileName)
 			return true
 		}
-		if err != nil && !os.IsNotExist(err) {
+		if !os.IsNotExist(err) {
 			return false
 		}
 		time.Sleep(time.Second)

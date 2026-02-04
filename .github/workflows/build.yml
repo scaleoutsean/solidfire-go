@@ -22,5 +22,5 @@ jobs:
 
     - name: Build Examples
       run: |
-        go build -o create-volumes example/create-volumes.go
-        go build -o s3-backup example/s3-backup.go
+        go build -o create-volumes example/create-volumes/main.go
+        go build -o s3-backup example/s3-backup/main.go
