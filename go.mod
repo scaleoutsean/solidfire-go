@@ -1,9 +1,10 @@
-module github.com/j-griffith/solidfire-go
+module github.com/scaleoutsean/solidfire-go
 
-go 1.13
+go 1.25
 
 require (
-	github.com/kubernetes-csi/csi-lib-iscsi v0.0.0-20200118015005-959f12c91ca8
-	github.com/sirupsen/logrus v1.4.2
-	gopkg.in/yaml.v2 v2.2.8
+	github.com/sirupsen/logrus v1.9.4
+	gopkg.in/yaml.v2 v2.4.0
 )
+
+require golang.org/x/sys v0.40.0 // indirect

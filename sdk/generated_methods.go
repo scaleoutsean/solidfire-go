@@ -1047,8 +1047,8 @@ func (sfClient *SFClient) GetVolumeCount(ctx context.Context) (*GetVolumeCountRe
 // GetAsyncResult to poll the asyncHandle value returned by the method.
 // GetAsyncResult returns the overall status of the operation (in progress, completed, or error) in a standard fashion, but the actual
 // data returned for the operation depends on the original method call and the return data is documented with each method.
-func (sfClient *SFClient) GetAsyncResult(ctx context.Context, req *GetAsyncResultRequest) (*interface{}, *SdkError) {
-	var res interface{}
+func (sfClient *SFClient) GetAsyncResult(ctx context.Context, req *GetAsyncResultRequest) (*GetAsyncResultResult, *SdkError) {
+	var res GetAsyncResultResult
 	_, err := sfClient.MakeSFCall(ctx, "GetAsyncResult", 1, req, &res)
 	return &res, err
 }

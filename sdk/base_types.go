@@ -17,6 +17,9 @@ type SdkError struct {
 }
 
 func (this *SdkError) Error() string {
+	if this == nil {
+		return "unknown error (nil SdkError)"
+	}
 	return fmt.Sprintf("%s : %s", string(this.Code), this.Detail)
 
 }

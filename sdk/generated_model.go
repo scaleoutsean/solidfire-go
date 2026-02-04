@@ -4353,6 +4353,13 @@ type VolumePair struct {
 type BreakSnapMirrorVolumeResult struct {
 }
 
+type ISCSISessionAuthentication struct {
+	AuthMethod    string `json:"authMethod,omitempty"`
+	ChapAlgorithm string `json:"chapAlgorithm,omitempty"`
+	ChapUsername  string `json:"chapUsername,omitempty"`
+	Direction     string `json:"direction,omitempty"`
+}
+
 type ISCSISession struct {
 	//
 	DriveIDs []int64 `json:"driveIDs,omitempty"`
@@ -4396,6 +4403,8 @@ type ISCSISession struct {
 	MsSinceLastScsiCommand int64 `json:"msSinceLastScsiCommand,omitempty"`
 	//
 	MsSinceLastIscsiPDU int64 `json:"msSinceLastIscsiPDU,omitempty"`
+	//
+	Authentication *ISCSISessionAuthentication `json:"authentication,omitempty"`
 }
 
 type ListDriveHardwareResult struct {
@@ -5899,7 +5908,7 @@ type CreateVolumeRequest struct {
 	//maxIOPS
 	//burstIOPS
 	//You can get the default values for a volume by using the GetDefaultQoS method.
-	Qos QoS `json:"qos,omitempty"`
+	Qos *QoS `json:"qos,omitempty"`
 	//The list of name-value pairs in JSON object format.
 	//Total attribute size must be less than 1000B, or 1KB,
 	//including JSON formatting characters.
@@ -6375,7 +6384,7 @@ type ModifyVolumeRequest struct {
 	Access string `json:"access,omitempty"`
 	//New QoS settings for this volume. If not specified,
 	//the QoS settings are not changed.
-	Qos QoS `json:"qos,omitempty"`
+	Qos *QoS `json:"qos,omitempty"`
 	//New size of the volume in bytes. 1000000000 is equal to 1GB.
 	//Size is rounded up to the nearest 1MB. This parameter
 	//can only be used to increase the size of a volume.
@@ -7127,6 +7136,8 @@ type CreateGroupSnapshotRequest struct {
 	Attributes interface{} `json:"attributes,omitempty"`
 	//Label used by SnapMirror software to specify snapshot retention policy on SnapMirror endpoint.
 	SnapMirrorLabel string `json:"snapMirrorLabel,omitempty"`
+	//Specifies that the snapshot should not be created if a previous snapshot replication is in progress.
+	EnsureSerialCreation bool `json:"ensureSerialCreation,omitempty"`
 }
 
 type GetVolumeAccessGroupLunAssignmentsRequest struct {

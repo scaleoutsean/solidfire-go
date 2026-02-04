@@ -70,12 +70,14 @@ func (sfClient *SFClient) MakeSFCall(ctx context.Context, method string, id int3
 		body, _ := ioutil.ReadAll(resp.Body)
 
 		json.Unmarshal(body, &result)
+		// Check for method-level errors first (like list access denied)
 		if result.Error.Code != 0 {
 			var errorData SdkError
 			errorData.Code = fmt.Sprintf("%s.%d", SfapiError, result.Error.Code)
 			errorData.Detail = fmt.Sprintf("%d:%s", result.Error.Code, result.Error.Message)
 			returnError = &errorData
 		} else {
+			// Success block
 			tmpResults, reqerr := json.Marshal(result.Result)
 			if reqerr == nil {
 				json.Unmarshal(tmpResults, &res)
@@ -83,8 +85,13 @@ func (sfClient *SFClient) MakeSFCall(ctx context.Context, method string, id int3
 		}
 	}
 	log.WithContext(ctx).Debugf("Ending call %s", method)
+	// IMPORTANT: Return nil SdkError explicitly if successful, otherwise it returns a nil pointer typed as *SdkError which is NOT nil interface{}
+	if returnError == nil {
+		return result, nil
+	}
 	return result, returnError
 }
+
 
 func makeBasicAuthHeader(username, password string) string {
 	auth := username + ":" + password

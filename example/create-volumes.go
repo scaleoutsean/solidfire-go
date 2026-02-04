@@ -1,14 +1,32 @@
+// Copyright (c) 2026 scaleoutSean (github.com/scaleoutsean)
+// Copyright (c) 2020 John Griffith (github.com/j-griffith)
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at:
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 package main
 
 import (
 	"context"
 	"fmt"
-	"github.com/j-griffith/solidfire-go/sdk"
-	"github.com/kubernetes-csi/csi-lib-iscsi/iscsi"
-	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/scaleoutsean/solidfire-go/sdk"
+	"gopkg.in/yaml.v2"
 )
 
 const GiB = 1073741824
@@ -131,41 +149,30 @@ func (c *Client) ListVolumes() ([]sdk.Volume, error) {
 	return response.Volumes, err
 }
 
-func (c *Client) buildConnector(volumeID int64) (*iscsi.Connector, error) {
-	sfVolume, err := c.GetVolume(volumeID)
+func (c *Client) GetClusterVersion() (string, error) {
+	ctx := context.Background()
+	res, err := c.SFClient.GetClusterVersionInfo(ctx)
 	if err != nil {
+		return "", err
 	}
+	return res.ClusterVersion, nil
+}
 
-	chapSecret := iscsi.Secrets{
-		SecretsType: "chap",
-		UserName:    c.TenantName,
-		Password:    c.TargetSecret,
-		UserNameIn:  c.TenantName,
-		PasswordIn:  c.InitiatorSecret,
+func (c *Client) ListISCSISessions() ([]sdk.ISCSISession, error) {
+	ctx := context.Background()
+	res, err := c.SFClient.ListISCSISessions(ctx)
+	if err != nil {
+		return nil, err
 	}
-
-	tgtInfo := iscsi.TargetInfo{
-		Iqn:    sfVolume.Iqn,
-		Portal: c.SVIP,
-	}
-	connector := &iscsi.Connector{
-		AuthType:         "chap",
-		Targets:          []iscsi.TargetInfo{tgtInfo},
-		DoCHAPDiscovery:  true,
-		DiscoverySecrets: chapSecret,
-		SessionSecrets:   chapSecret,
-		Interface:        c.InitiatorIface,
-	}
-	log.Printf("DEBUG: Connector is: %+v\n", connector)
-	return connector, nil
+	return res.Sessions, nil
 }
 
 func main() {
 	yamlConf := `
-endpoint: https://admin:NetApp123!@70.0.6.124/json-rpc/10.0
-svip: 10.100.10.7:3260
-tenantname: px-admin
-defaultvolumesize: 64
+endpoint: https://admin:admin@10.1.1.1/json-rpc/12.5
+svip: 10.1.2.1:3260
+tenantname: pentester
+defaultvolumesize: 1
 initiatoriface: default
 `
 	clt, err := NewClient(yamlConf)
@@ -173,7 +180,7 @@ initiatoriface: default
 		log.Fatalf("failed to obtain a valid client: %v\n", err)
 	}
 	req := sdk.CreateVolumeRequest{
-		TotalSize:  64 * GiB,
+		TotalSize:  2 * GiB,
 		AccountID:  clt.AccountID,
 		Name:       "test-volume-1",
 		Enable512e: true,
@@ -195,4 +202,27 @@ initiatoriface: default
 		}
 		log.Printf("connected volume path is: %v\n", path)
 	*/
+
+	// Example of checking cluster version and new fields
+	version, err := clt.GetClusterVersion()
+	if err != nil {
+		log.Printf("failed to get cluster version: %v\n", err)
+	} else {
+		log.Printf("Cluster Version: %s\n", version)
+	}
+
+	sessions, err := clt.ListISCSISessions()
+	if err != nil {
+		log.Printf("failed to list iscsi sessions: %v\n", err)
+	} else {
+		log.Printf("Found %d iSCSI sessions\n", len(sessions))
+		for _, s := range sessions {
+			if s.Authentication != nil {
+				log.Printf("Session %d Authentication Method: %s\n", s.SessionID, s.Authentication.AuthMethod)
+				if s.Authentication.ChapAlgorithm != "" {
+					log.Printf("Session %d CHAP Algorithm: %s\n", s.SessionID, s.Authentication.ChapAlgorithm)
+				}
+			}
+		}
+	}
 }
