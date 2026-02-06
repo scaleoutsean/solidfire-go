@@ -4353,13 +4353,6 @@ type VolumePair struct {
 type BreakSnapMirrorVolumeResult struct {
 }
 
-type ISCSISessionAuthentication struct {
-	AuthMethod    string `json:"authMethod,omitempty"`
-	ChapAlgorithm string `json:"chapAlgorithm,omitempty"`
-	ChapUsername  string `json:"chapUsername,omitempty"`
-	Direction     string `json:"direction,omitempty"`
-}
-
 type ISCSISession struct {
 	//
 	DriveIDs []int64 `json:"driveIDs,omitempty"`
@@ -4403,8 +4396,6 @@ type ISCSISession struct {
 	MsSinceLastScsiCommand int64 `json:"msSinceLastScsiCommand,omitempty"`
 	//
 	MsSinceLastIscsiPDU int64 `json:"msSinceLastIscsiPDU,omitempty"`
-	//
-	Authentication *ISCSISessionAuthentication `json:"authentication,omitempty"`
 }
 
 type ListDriveHardwareResult struct {
