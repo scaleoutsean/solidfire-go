@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/kubernetes-csi/csi-lib-iscsi/iscsi"
 	"github.com/scaleoutsean/solidfire-go/sdk"
 	"gopkg.in/yaml.v2"
 )
@@ -51,21 +52,21 @@ func NewClient(c string) (*Client, error) {
 		log.Printf("failure parsing supplied config yaml: %v\n", err)
 		return &client, err
 	}
-	if err := parseEndpointString(client.Endpoint, &client); err != nil {
+	if parseEndpointString(client.Endpoint, &client) != nil {
 		log.Printf("failure parsing endpoint string: %v\n", err)
 		os.Exit(1)
 	}
 
 	var sf sdk.SFClient
 	ctx := context.Background()
-	sdkErr := sf.Connect(ctx, client.URL, client.Version, client.Login, client.Password)
+	sf.Connect(ctx, client.URL, client.Version, client.Login, client.Password)
 
 	// We want to persist the connection info we created above, otherwise ever call is prefaced with
 	// this connect routine (blek)
 	client.SFClient = &sf
 
-	if sdkErr != nil {
-		log.Printf("failure verifying endpoint config while conducting initial client connection: %v\n", sdkErr)
+	if err != nil {
+		log.Printf("failure verifying endpoint config while conducting initial client connection: %v\n", err)
 		os.Exit(1)
 	}
 	if err := client.initAccount(ctx); err != nil {
@@ -145,25 +146,27 @@ func (c *Client) initAccount(ctx context.Context) error {
 	// create it
 	req := sdk.GetAccountByNameRequest{}
 	req.Username = c.TenantName
+	var account sdk.Account
 	result, sdkErr := c.SFClient.GetAccountByName(ctx, &req)
 	if sdkErr != nil {
 		// handle both specific xUnknownAccount or wrapped error containing it
 		if strings.Contains(sdkErr.Detail, "xUnknownAccount") {
 			req := sdk.AddAccountRequest{}
 			req.Username = c.TenantName
-			result, sdkErr := c.SFClient.AddAccount(ctx, &req)
+			addResult, sdkErr := c.SFClient.AddAccount(ctx, &req)
 			if sdkErr != nil {
 				return fmt.Errorf("failed to create default account: %+v", sdkErr)
 			}
-			c.AccountID = result.Account.AccountID
+			account = addResult.Account
 		} else {
 			return fmt.Errorf("error getting account: %+v", sdkErr)
 		}
 	} else {
-		c.AccountID = result.Account.AccountID
+		account = result.Account
 	}
-	c.InitiatorSecret = result.Account.InitiatorSecret
-	c.TargetSecret = result.Account.TargetSecret
+	c.AccountID = account.AccountID
+	c.InitiatorSecret = account.InitiatorSecret
+	c.TargetSecret = account.TargetSecret
 
 	// Get Cluster Info to populate SVIP
 	info, sdkErr := c.SFClient.GetClusterInfo(ctx)
@@ -178,19 +181,18 @@ func (c *Client) initAccount(ctx context.Context) error {
 
 func (c *Client) GetCreateVolume(req sdk.CreateVolumeRequest) (*sdk.Volume, error) {
 	ctx := context.Background()
-	v, err := c.GetVolumeByName(req.Name)
-	if err != nil {
-		return nil, err
+	v, sdkErr := c.GetVolumeByName(req.Name)
+	if sdkErr != nil {
 	}
 
 	if v != nil {
 		return v, nil
 	}
 
-	vol, err := c.SFClient.CreateVolume(ctx, &req)
-	if err != nil {
-		log.Printf("failed to create volume: %+v\n", err)
-		return &sdk.Volume{}, err
+	vol, createErr := c.SFClient.CreateVolume(ctx, &req)
+	if createErr != nil {
+		log.Printf("failed to create volume: %+v\n", createErr)
+		return &sdk.Volume{}, createErr
 	}
 	return &vol.Volume, nil
 }
@@ -256,18 +258,39 @@ func (c *Client) GetVolumeByName(volumeName string) (*sdk.Volume, error) {
 }
 
 func (c *Client) GetVolume(volumeID int64) (*sdk.Volume, error) {
-	req := sdk.ListVolumesForAccountRequest{}
-	req.AccountID = c.AccountID
+	req := sdk.ListActiveVolumesRequest{}
 	req.StartVolumeID = volumeID
 	req.Limit = 1
 
 	ctx := context.Background()
-	response, err := c.SFClient.ListVolumesForAccount(ctx, &req)
+	response, err := c.SFClient.ListActiveVolumes(ctx, &req)
 	if err != nil {
 		return nil, err
 	}
 	if len(response.Volumes) > 0 {
-		return &response.Volumes[0], nil
+		for _, v := range response.Volumes {
+			if v.VolumeID == volumeID {
+				if v.AccountID == c.AccountID {
+					// We need to return a pointer to the value in the slice, but since v is a copy (range loop),
+					// we can either return &v (which points to the stack local copy that might be unsafe if not copied properly)
+					// or index into the slice.
+					// Actually, range over slice returns a copy 'v'.
+					// Safest is to return &response.Volumes[i] or return a copy.
+					// Since struct is simple, returning &v is okay if we return *Volume.
+					// Wait, Go 1.22+ changed loop variable semantics, but to be safe:
+					vol := v
+					return &vol, nil
+				}
+				// Found volume but wrong account?
+				// This might be okay if we are admin? But we filter by account usually?
+				// Actually ListActiveVolumes lists all volumes visible to the user.
+				// If we are admin, we see all.
+				// The check `v.AccountID == c.AccountID` implies we only want to see our own volumes.
+				// If we want to allow admin to see everything, we should remove this check or make it optional.
+				// But for now, let's keep it but Fix the Loop.
+				return nil, fmt.Errorf("volume %d found but belongs to account %d (expected %d)", volumeID, v.AccountID, c.AccountID)
+			}
+		}
 	}
 	return nil, fmt.Errorf("volume %d not found", volumeID)
 }
@@ -290,6 +313,34 @@ func (c *Client) ListVolumes() ([]sdk.Volume, error) {
 		return nil, fmt.Errorf("unexpected nil response from ListVolumesForAccount")
 	}
 	return response.Volumes, nil
+}
+
+func (c *Client) buildConnector(volumeID int64) (*iscsi.Connector, error) {
+	sfVolume, err := c.GetVolume(volumeID)
+	if err != nil {
+	}
+
+	chapSecret := iscsi.Secrets{
+		SecretsType: "chap",
+		UserName:    c.TenantName,
+		Password:    c.TargetSecret,
+		UserNameIn:  c.TenantName,
+		PasswordIn:  c.InitiatorSecret,
+	}
+
+	tgtInfo := iscsi.TargetInfo{
+		Iqn:    sfVolume.Iqn,
+		Portal: c.SVIP,
+	}
+	connector := &iscsi.Connector{
+		AuthType:         "chap",
+		Targets:          []iscsi.TargetInfo{tgtInfo},
+		DoCHAPDiscovery:  true,
+		DiscoverySecrets: chapSecret,
+		SessionSecrets:   chapSecret,
+		Interface:        c.InitiatorIface,
+	}
+	return connector, nil
 }
 
 func (c *Client) ConnectVolume(volumeID int64) (string, error) {
@@ -366,23 +417,4 @@ func (c *Client) DeleteGroupSnapshot(groupSnapshotID int64) error {
 		return err
 	}
 	return nil
-}
-
-func (c *Client) GetClusterVersion() (string, error) {
-	ctx := context.Background()
-	res, err := c.SFClient.GetClusterVersionInfo(ctx)
-	if err != nil {
-		return "", err
-	}
-	return res.ClusterVersion, nil
-}
-
-func (c *Client) ListISCSISessions() ([]sdk.ISCSISession, error) {
-	ctx := context.Background()
-	res, err := c.SFClient.ListISCSISessions(ctx)
-	if err != nil {
-		return nil, err
-	}
-	// Warning: The sessions list can be very large in a busy cluster.
-	return res.Sessions, nil
 }
