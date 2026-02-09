@@ -11,7 +11,7 @@ import (
 // WaitForAsyncResult polls the GetAsyncResult API until the job completes.
 // It returns the final result or an error if the job fails or times out.
 func (sfClient *SFClient) WaitForAsyncResult(ctx context.Context, asyncHandle int64) (*GetAsyncResultResult, error) {
-	ticker := time.NewTicker(time.Second * 1)
+	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
 	for {
@@ -24,12 +24,14 @@ func (sfClient *SFClient) WaitForAsyncResult(ctx context.Context, asyncHandle in
 				AsyncHandle: asyncHandle,
 				KeepResult:  true,
 			}
-			
+
 			res, sdkErr := sfClient.GetAsyncResult(ctx, req)
 			if sdkErr != nil {
-				// Retry on network errors? For now, fail.
-				// Format wrapper error
-				return nil, fmt.Errorf("GetAsyncResult API failed: code=%s msg=%s", sdkErr.Code, sdkErr.Detail)
+				// Treat SDK errors from GetAsyncResult as transient: the async job may not
+				// yet be visible via GetAsyncResult even though the cluster returned an
+				// async handle from CloneVolume. Log and retry until ctx cancels.
+				log.WithContext(ctx).Warnf("GetAsyncResult transient error for handle %d: code=%s detail=%s; will retry", asyncHandle, sdkErr.Code, sdkErr.Detail)
+				continue
 			}
 
 			if res.Status == "complete" {
@@ -39,7 +41,7 @@ func (sfClient *SFClient) WaitForAsyncResult(ctx context.Context, asyncHandle in
 			if res.Status == "error" {
 				return res, fmt.Errorf("async job failed: %v", res.Result)
 			}
-			
+
 			log.WithContext(ctx).Debugf("AsyncHandle %d running...", asyncHandle)
 		}
 	}
