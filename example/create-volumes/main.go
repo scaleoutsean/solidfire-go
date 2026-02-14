@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kubernetes-csi/csi-lib-iscsi/iscsi"
 	"github.com/scaleoutsean/solidfire-go/sdk"
 	"gopkg.in/yaml.v2"
 )
@@ -130,35 +129,6 @@ func (c *Client) ListVolumes() ([]sdk.Volume, error) {
 	ctx := context.Background()
 	response, err := c.SFClient.ListVolumesForAccount(ctx, &req)
 	return response.Volumes, err
-}
-
-func (c *Client) buildConnector(volumeID int64) (*iscsi.Connector, error) {
-	sfVolume, err := c.GetVolume(volumeID)
-	if err != nil {
-	}
-
-	chapSecret := iscsi.Secrets{
-		SecretsType: "chap",
-		UserName:    c.TenantName,
-		Password:    c.TargetSecret,
-		UserNameIn:  c.TenantName,
-		PasswordIn:  c.InitiatorSecret,
-	}
-
-	tgtInfo := iscsi.TargetInfo{
-		Iqn:    sfVolume.Iqn,
-		Portal: c.SVIP,
-	}
-	connector := &iscsi.Connector{
-		AuthType:         "chap",
-		Targets:          []iscsi.TargetInfo{tgtInfo},
-		DoCHAPDiscovery:  true,
-		DiscoverySecrets: chapSecret,
-		SessionSecrets:   chapSecret,
-		Interface:        c.InitiatorIface,
-	}
-	log.Printf("DEBUG: Connector is: %+v\n", connector)
-	return connector, nil
 }
 
 func main() {

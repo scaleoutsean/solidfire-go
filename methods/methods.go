@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kubernetes-csi/csi-lib-iscsi/iscsi"
 	"github.com/scaleoutsean/solidfire-go/sdk"
 	"gopkg.in/yaml.v2"
 )
@@ -313,34 +312,6 @@ func (c *Client) ListVolumes() ([]sdk.Volume, error) {
 		return nil, fmt.Errorf("unexpected nil response from ListVolumesForAccount")
 	}
 	return response.Volumes, nil
-}
-
-func (c *Client) buildConnector(volumeID int64) (*iscsi.Connector, error) {
-	sfVolume, err := c.GetVolume(volumeID)
-	if err != nil {
-	}
-
-	chapSecret := iscsi.Secrets{
-		SecretsType: "chap",
-		UserName:    c.TenantName,
-		Password:    c.TargetSecret,
-		UserNameIn:  c.TenantName,
-		PasswordIn:  c.InitiatorSecret,
-	}
-
-	tgtInfo := iscsi.TargetInfo{
-		Iqn:    sfVolume.Iqn,
-		Portal: c.SVIP,
-	}
-	connector := &iscsi.Connector{
-		AuthType:         "chap",
-		Targets:          []iscsi.TargetInfo{tgtInfo},
-		DoCHAPDiscovery:  true,
-		DiscoverySecrets: chapSecret,
-		SessionSecrets:   chapSecret,
-		Interface:        c.InitiatorIface,
-	}
-	return connector, nil
 }
 
 func (c *Client) ConnectVolume(volumeID int64) (string, error) {

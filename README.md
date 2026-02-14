@@ -1,10 +1,12 @@
 # solidfire-go
 
+[![Build](https://github.com/scaleoutsean/solidfire-go/actions/workflows/build.yml/badge.svg)](https://github.com/scaleoutsean/solidfire-go/actions/workflows/build.yml)
+
 The solidfire-go library is a Go language SDK for interacting with a SolidFire Cluster.
 
 This particular repository was a derivative of the auto-generated Go SDK package found on NetApp's Ngage BitBucket repository.
 
-What this derivative does is strip out the auto-generated code and just provides the resultant SDK itself. In addition this library also provides a "methods" package with some wrappers around the basic and most common volume operations a user might be interested in.
+What this derivative did is strip out the auto-generated code and just provides the resultant SDK itself. In addition this library also provides a "methods" package with some wrappers around the basic and most common volume operations a user might be interested in.
 
 The methods package wraps soem of the basics into very easy to consume functions and also can serve as a good example on how to use the SDK.
 
@@ -17,7 +19,6 @@ go build ./sdk/... ./methods/...
 Use Go 1.25 or newer. The following dependencies exist.
 
 ```sh
-
 github.com/sirupsen/logrus
 gopkg.in/yaml.v2
 ```
