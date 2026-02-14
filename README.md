@@ -28,19 +28,27 @@ Build examples:
 ```sh
 go build -o create-volumes ./example/create-volumes/main.go
 go build -o s3-backup ./example/s3-backup/main.go
+go build -o account-redact ./example/account-redact/main.go
+go build -o secure-api-proxy ./example/secure-api-proxy
 # or build everything at once
 # go build ./sdk/... ./methods/... && go build -o create-volumes example/create-volumes.go && go build -o s3-backup example/s3-backup.go
 ```
 
-The solidfire-csi repository contains additional examples of using this SDK.
+The terraform-provider-solidfire and solidfire-csi repositories contain additional examples of using this SDK.
+
+Use (pick appropriate version):
+
+```sh
+go get github.com/scaleoutsean/solidfire-go@v1.0.0-alpha
+```
 
 ## Compatibility with SolidFire (ElementOS)
 
 solidfire-go is developed and tested with SolidFire 12.5 using SolidFire Demo VM v12.5.0.897.
 
-Older versions are expected to work, but not supported.
+Older versions are expected to work, but not tested or "supported".
 
-Newer versions are supported (using 12.5 or newer JSON-RPC path), but may not support all parameters. One notable exception is the authentication field in iSCSI sessions, enabling access to `chapAlgorithm` in newer SolidFire versions (>=12.7) while maintaining compatibility with 12.5 (and older) that are limited to MD5.
+Newer versions are supported (using 12.5 or newer JSON-RPC API path), but may not support all parameters available in those versions. One notable exception is the authentication field in iSCSI sessions, enabling access to `chapAlgorithm` in newer SolidFire versions (>=12.7) while maintaining compatibility with 12.5 (and older) that are limited to MD5.
 
 ## Contributing
 
