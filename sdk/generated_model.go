@@ -5886,8 +5886,8 @@ type CreateVolumeRequest struct {
 	Name string `json:"name,"`
 	//AccountID for the owner of this volume.
 	AccountID int64 `json:"accountID,"`
-	//Total size of the volume, in bytes. Size is rounded up to
-	//the nearest 1MB size.
+	//Total size of the volume, in bytes. Size must be in
+	//range(1,16384) MiB.
 	TotalSize int64 `json:"totalSize,"`
 	//Specifies whether 512e emulation is enabled or not. Possible values are:
 	//true: The volume provides 512-byte sector emulation.
