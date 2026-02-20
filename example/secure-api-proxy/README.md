@@ -1,6 +1,6 @@
 # Secure SolidFire API Proxy
 
-This is a production-grade skeleton for a security-focused reverse proxy that sits in front of one or more NetApp SolidFire clusters. It provides advanced features that are typically unavailable in the standard SolidFire appliance.
+This is a skeleton for a security-focused reverse proxy that sits in front of one or more NetApp SolidFire clusters. It provides advanced features that are typically unavailable in the standard SolidFire appliance.
 
 ## Features
 
@@ -9,7 +9,7 @@ This is a production-grade skeleton for a security-focused reverse proxy that si
 - **Granular RBAC:** Prevent specific users from performing dangerous actions (e.g. non-admins cannot set manual QoS values).
 - **Object Filtering (ABAC):** Automatically filter API responses to ensure users only see objects (Accounts, Volumes) belonging to them.
 - **Auditable Logging:** Support for JSON-formatted logs and secure forwarding to a TLS-enabled Syslog destination.
-- **Sensitive Data Redaction:** Leverages the `solidfire-go` SDK to (optionally, depending on application preference) automatically strip CHAP secrets from the `Account` object before it reaches the client.
+- **Sensitive Data Redaction:** Leverages the `solidfire-go` SDK to (optionally, depending on application preference) automatically strip CHAP secrets from the `Account` object before it reaches the client (see `Account.Redact()` method).
 
 ## Architecture
 

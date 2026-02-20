@@ -52,7 +52,7 @@ Newer versions are supported (using 12.5 or newer JSON-RPC API path), but may no
 
 ## Contributing
 
-Support for the API methods and parameters from newer versions (12.5+) a goal that depends on contributors.
+Support for the API methods and parameters from newer versions (12.5+) is a goal that depends on contributors.
 
 [What's New](https://docs.netapp.com/us-en/element-software/concepts/concept_rn_whats_new_element.html#garbage-collection-improvement) from the official documentation mentions new features added to API methods in v12.
 
