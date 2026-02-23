@@ -4,11 +4,11 @@
 
 The solidfire-go library is a Go language SDK for interacting with a SolidFire Cluster.
 
-This particular repository was a derivative of the auto-generated Go SDK package found on NetApp's Ngage BitBucket repository.
+This particular repository is a fork of a downstream derivative of the auto-generated Go SDK package from NetApp's Ngage BitBucket repository.
 
-What this derivative did is strip out the auto-generated code and just provides the resultant SDK itself. In addition this library also provides a "methods" package with some wrappers around the basic and most common volume operations a user might be interested in.
+What the derivative did was strip out the auto-generated code and just provided the resultant SDK itself. In addition this library also provides a "methods" package with some wrappers around the basic and most common volume operations a user might be interested in. The methods package wraps soem of the basics into very easy to consume functions and also can serve as a good example on how to use the SDK.
 
-The methods package wraps soem of the basics into very easy to consume functions and also can serve as a good example on how to use the SDK.
+This package refreshes and improves that fork for SolidFire 12.5.
 
 ## Build
 
@@ -63,4 +63,3 @@ Community contributions and bug reports are welcome. Please include complete, wo
 This repository is an updated fork of John Griffith's repository [https://github.com/j-griffith/solidfire-go](https://github.com/j-griffith/solidfire-go). Thank you, John!
 
 An earlier, auto-generated SDK version from an Ngage Bitbucket repository (which I can't find on the Internet) is copyrighted by NetApp, Inc.
-

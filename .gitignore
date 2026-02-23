@@ -11,7 +11,7 @@
 # Output of the go coverage tool and VSCode directory
 *.out
 .VSCode
-
+RELEASE.md
 # Dependency directories (remove the comment below to include it)
 vendor/
 # Example binaries
