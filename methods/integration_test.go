@@ -53,6 +53,7 @@ func TestListISCSISessions(t *testing.T) {
 	}
 	t.Logf("Found %d sessions", len(sessions))
 	for _, s := range sessions {
+		t.Logf("Session %d: %s -> %s", s.SessionID, s.InitiatorName, s.TargetName)
 		if s.Authentication != nil {
 			t.Logf("Session %d Auth: %s / %s", s.SessionID, s.Authentication.AuthMethod, s.Authentication.ChapAlgorithm)
 		}

@@ -389,3 +389,21 @@ func (c *Client) DeleteGroupSnapshot(groupSnapshotID int64) error {
 	}
 	return nil
 }
+
+func (c *Client) GetClusterVersion() (string, error) {
+	ctx := context.Background()
+	res, err := c.SFClient.GetClusterVersionInfo(ctx)
+	if err != nil {
+		return "", err
+	}
+	return res.ClusterVersion, nil
+}
+
+func (c *Client) ListISCSISessions() ([]sdk.ISCSISession, error) {
+	ctx := context.Background()
+	res, err := c.SFClient.ListISCSISessions(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return res.Sessions, nil
+}

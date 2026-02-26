@@ -2,39 +2,39 @@ package sdk
 
 // THIS IS A GENERATED FILE.  DO NOT MODIFY
 
-//A Protection Domain is a set of one or more components whose simultaneous failure is protected
-//from causing data unavailability or loss. This specifies one of the types of Protection Domains
-//recognized by this cluster.
+// A Protection Domain is a set of one or more components whose simultaneous failure is protected
+// from causing data unavailability or loss. This specifies one of the types of Protection Domains
+// recognized by this cluster.
 type ProtectionDomainType string
 
-//The method of protecting data on the cluster
+// The method of protecting data on the cluster
 type ProtectionScheme string
 
-//This specifies error code for a proposed node addition.
+// This specifies error code for a proposed node addition.
 type ProposedNodeErrorCode string
 
-//This type qualifies a ClusterAdmin with its authentication method.
+// This type qualifies a ClusterAdmin with its authentication method.
 type AuthMethod string
 
-//This specifies a drive's encryption capability.
+// This specifies a drive's encryption capability.
 type DriveEncryptionCapabilityType string
 
-//This specifies a node's FIPS 140-2 compliance status.
+// This specifies a node's FIPS 140-2 compliance status.
 type FipsDrivesStatusType string
 
-//The category of the protection scheme.
+// The category of the protection scheme.
 type ProtectionSchemeCategory string
 
-//The public visibility of the protection scheme.
+// The public visibility of the protection scheme.
 type ProtectionSchemeVisibility string
 
-//Status of the remote snapshot on the target cluster as seen on the source cluster
+// Status of the remote snapshot on the target cluster as seen on the source cluster
 type RemoteClusterSnapshotStatus string
 
-//Describes host access for a volume.
+// Describes host access for a volume.
 type VolumeAccess string
 
-//This type indicates the configuration data which will be accessed or modified by the element auth container.
+// This type indicates the configuration data which will be accessed or modified by the element auth container.
 type AuthConfigType string
 type NeedsWorkEnableClusterSshResult struct {
 }
@@ -4353,7 +4353,16 @@ type VolumePair struct {
 type BreakSnapMirrorVolumeResult struct {
 }
 
+type Authentication struct {
+	//
+	AuthMethod AuthMethod `json:"authMethod,"`
+	//
+	ChapAlgorithm string `json:"chapAlgorithm,"`
+}
+
 type ISCSISession struct {
+	//
+	Authentication *Authentication `json:"authentication,omitempty"`
 	//
 	DriveIDs []int64 `json:"driveIDs,omitempty"`
 	//
