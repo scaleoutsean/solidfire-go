@@ -1,13 +1,10 @@
 module github.com/scaleoutsean/solidfire-go
 
-go 1.25
+go 1.25.0
 
 require (
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.9.4
 	gopkg.in/yaml.v2 v2.2.8
 )
 
-require (
-	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
-	golang.org/x/sys v0.0.0-20190422165155-953cdadca894 // indirect
-)
+require golang.org/x/sys v0.42.0 // indirect

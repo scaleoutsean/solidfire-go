@@ -5891,7 +5891,7 @@ type SetNodeSSLCertificateRequest struct {
 type CreateVolumeRequest struct {
 	//The name of the volume access group (might be user specified).
 	//Not required to be unique, but recommended.
-	//Might be 1 to 64 characters in length.
+	//Must be 1 to 64 characters in length.
 	Name string `json:"name,"`
 	//AccountID for the owner of this volume.
 	AccountID int64 `json:"accountID,"`
