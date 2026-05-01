@@ -5901,7 +5901,7 @@ type CreateVolumeRequest struct {
 	//Specifies whether 512e emulation is enabled or not. Possible values are:
 	//true: The volume provides 512-byte sector emulation.
 	//false: 512e emulation is not enabled.
-	Enable512e bool `json:"enable512e,omitempty"`
+	Enable512e bool `json:"enable512e,"`
 	//Initial quality of service settings for this volume. Default
 	//values are used if none are specified. Valid settings are:
 	//minIOPS
@@ -6106,7 +6106,7 @@ type CloneVolumeFromDeadRequest struct {
 	Attributes interface{} `json:"attributes,omitempty"`
 	//Specifies whether the new volume should use 512-byte sector emulation.
 	//If unspecified, the setting of the volume being cloned is used.
-	Enable512e bool `json:"enable512e,omitempty"`
+	Enable512e bool `json:"enable512e,"`
 }
 
 type GetNvramInfoRequest struct {
@@ -8071,7 +8071,7 @@ type CloneVolumeRequest struct {
 	Attributes interface{} `json:"attributes,omitempty"`
 	//Specifies whether the new volume should use 512-byte sector emulation.
 	//If unspecified, the setting of the volume being cloned is used.
-	Enable512e bool `json:"enable512e,omitempty"`
+	Enable512e bool `json:"enable512e,"`
 	//Specifies whether SnapMirror replication is enabled or not. Defaults to false.
 	EnableSnapMirrorReplication bool `json:"enableSnapMirrorReplication,omitempty"`
 }
