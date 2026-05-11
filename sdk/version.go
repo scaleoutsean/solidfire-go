@@ -1,4 +1,4 @@
 package sdk
 
 // Version is the current version of the SDK.
-const Version = "v1.0.4"
+const Version = "v1.0.5"
