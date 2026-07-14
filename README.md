@@ -16,7 +16,7 @@ This package refreshes and improves that fork for SolidFire 12.5.
 go build ./sdk/... ./methods/...
 ```
 
-Use Go 1.26 or newer. The following dependencies exist.
+Use Go 1.26.5 or newer. The following dependencies exist.
 
 ```sh
 github.com/sirupsen/logrus
@@ -39,7 +39,7 @@ The terraform-provider-solidfire and solidfire-csi repositories contain addition
 Use (pick appropriate version):
 
 ```sh
-go get github.com/scaleoutsean/solidfire-go@v1.0.4
+go get github.com/scaleoutsean/solidfire-go@v1.0.6
 ```
 
 ## Compatibility with SolidFire (ElementOS)

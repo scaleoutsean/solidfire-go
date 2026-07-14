@@ -1,6 +1,6 @@
 module github.com/scaleoutsean/solidfire-go
 
-go 1.26.3
+go 1.26.5
 
 require (
 	github.com/sirupsen/logrus v1.9.4
